@@ -1,12 +1,9 @@
 package com.dantest.demo.restservice;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +14,9 @@ public class ShowerService {
   private static final int SHOWER_COUNT = 10;
 
   private final ReservationService reservationService;
-  private final ApplicationEventPublisher eventPublisher;
-  private final ShowerStatusWebSocketHandler webSocketHandler;
 
-  public ShowerService(ReservationService reservationService,
-      ApplicationEventPublisher eventPublisher,
-      @Lazy ShowerStatusWebSocketHandler webSocketHandler) {
+  public ShowerService(ReservationService reservationService) {
     this.reservationService = reservationService;
-    this.eventPublisher = eventPublisher;
-    this.webSocketHandler = webSocketHandler;
   }
 
   @PostConstruct
@@ -45,7 +36,6 @@ public class ShowerService {
         }
       }
     }
-    broadcastShowerStatus();
   }
 
   public List<Shower> getAllShowers() {
@@ -66,7 +56,6 @@ public class ShowerService {
     if (shower != null) {
       shower.setOnline(isOnline);
       shower.setUnderMaintenance(isUnderMaintenance);
-      broadcastShowerStatus(); // Broadcast status after the update
     }
   }
 
@@ -95,20 +84,6 @@ public class ShowerService {
       } else {
         shower.setRemainingTime(0);
       }
-    }
-  }
-
-  public void updateShowerStatus(int id, boolean isOnline, boolean isUnderMaintenance) throws IOException {
-    setShowerStatus(id, isOnline, isUnderMaintenance);
-    eventPublisher.publishEvent(new ShowerStatusUpdateEvent(this, showers));
-    broadcastShowerStatus();
-  }
-
-  public void broadcastShowerStatus() {
-    try {
-      webSocketHandler.broadcastShowersStatus(showers);
-    } catch (IOException e) {
-      // Handle the exception
     }
   }
 }

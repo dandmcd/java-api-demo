@@ -2,7 +2,6 @@ package com.dantest.demo.restservice;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,9 +16,6 @@ public class ReservationController {
 
   @Autowired
   private ShowerService showerService;
-
-  @Autowired
-  private ApplicationEventPublisher eventPublisher;
 
   @PostMapping("/reserve")
   public ResponseEntity<?> createReservation(@RequestBody ReservationRequest request) {
@@ -47,12 +43,7 @@ public class ReservationController {
         shower.getId(),
         request.getDurationInMinutes());
 
-    // Publish and broadcast shower status update event
-    eventPublisher.publishEvent(new ShowerStatusUpdateEvent(this, showerService.getAllShowers()));
-
-    // Broadcast updated shower status
-    showerService.broadcastShowerStatus();
-
+    // Return updated reservation information and shower ID
     return ResponseEntity.ok(new ReservationResponse(reservation.getPinCode(), shower.getId()));
   }
 
