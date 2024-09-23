@@ -1,14 +1,27 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:21-jdk
+# Step 1: Use an official Maven image to build the application
+FROM maven:3.8.7-openjdk-21 AS build
 
-# Set the working directory in the container
+# Step 2: Set the working directory in the container
 WORKDIR /app
 
-# Copy the project’s jar file into the container at /app
-COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+# Step 3: Copy the pom.xml and source code into the container
+COPY pom.xml .
+COPY src ./src
 
-# Make port 8080 available to the world outside this container
+# Step 4: Build the application (this creates the .jar file in the target directory)
+RUN mvn clean install
+
+# Step 5: Use an official OpenJDK runtime as a parent image
+FROM openjdk:21-jdk
+
+# Step 6: Set the working directory in the container
+WORKDIR /app
+
+# Step 7: Copy the built .jar file from the build stage
+COPY --from=build /app/target/demo-0.0.1-SNAPSHOT.jar app.jar
+
+# Step 8: Expose port 8080
 EXPOSE 8080
 
-# Run the jar file
+# Step 9: Run the jar file
 ENTRYPOINT ["java", "-jar", "app.jar"]
