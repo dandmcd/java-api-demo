@@ -1,5 +1,5 @@
 # Step 1: Use an official Maven image to build the application
-FROM maven:3.8.7-openjdk-21 AS build
+FROM maven:3.9.8-eclipse-temurin-21 AS build
 
 # Step 2: Set the working directory in the container
 WORKDIR /app
